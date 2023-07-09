@@ -17,14 +17,14 @@ export class UsersController {
     }
     @Post('/email-verify')
     async verifyEmail(@Query() dto : VerifyEmailDto): Promise<string>{
-        console.log(dto);
-        return;
+        const { signupVerifyToken } = dto;
+        return await this.userService.verifyEmail(signupVerifyToken);
     }
 
     @Post('/login')
     async login(@Body() dto : UserLoginDto): Promise<string>{
-        console.log(dto);
-        return;
+        const { email, password } =dto;
+        return await this.userService.login(email,password);
     }
 
     @Get('/:id')
