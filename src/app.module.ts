@@ -1,10 +1,12 @@
-import { Module } from '@nestjs/common';
+import {MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common';
 import {UsersModule} from "./users/users.module";
-import {ConfigModule, ConfigService} from "@nestjs/config";
+import {ConfigModule} from "@nestjs/config";
 import emailConfig from "./config/email.config";
 import {validationSchema} from "./config/validation.schema";
 import {TypeOrmModule} from "@nestjs/typeorm";
 import {UserEntity} from "./users/user.entity";
+import {LoggerMiddleware} from "./logger.middleware";
+import {Logger2Middleware} from "./logger2.middleware";
 
 // @Module({
 //   imports: [UsersModule, EmailModule],
@@ -36,4 +38,10 @@ import {UserEntity} from "./users/user.entity";
   // controllers:[],
   // providers:[],
 })
-export class AppModule { }
+export class AppModule implements NestModule{
+    configure(consumer: MiddlewareConsumer): any{
+        consumer.apply(LoggerMiddleware,Logger2Middleware)
+            // .exclude({path: '/users', method:RequestMethod.GET})
+            .forRoutes('/users');
+    }
+}

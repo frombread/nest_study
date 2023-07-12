@@ -3,12 +3,15 @@ import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import {ValidationPipe} from "@nestjs/common";
+import {logger3} from "./logger3/logger3.middleware";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-  }));
+  app.use(logger3);
+  //
+  // app.useGlobalPipes(new ValidationPipe({
+  //   transform: true,
+  // }));
   await app.listen(3000);
 }
 bootstrap();
