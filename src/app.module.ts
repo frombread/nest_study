@@ -7,6 +7,17 @@ import {TypeOrmModule} from "@nestjs/typeorm";
 import {UserEntity} from "./users/user.entity";
 import {LoggerMiddleware} from "./logger.middleware";
 import {Logger2Middleware} from "./logger2.middleware";
+import {APP_GUARD} from "@nestjs/core";
+import {AuthGuard} from "./can.activate";
+import authConfig from "./config/auth.config";
+import {AppService} from "./app.service";
+import {AppController} from "./app.controller";
+import { LoggerModule } from './my-logger/my-logger.module';
+import {utilities as nestWinstonModuleUtilities, WinstonModule} from "nest-winston";
+import * as winston from "winston";
+import {createNestWinstonLogger} from "nest-winston/dist/winston.providers";
+import {LoggingModule} from "./logging.module";
+import { BatchModule } from './batch/batch.module';
 
 // @Module({
 //   imports: [UsersModule, EmailModule],
@@ -20,7 +31,7 @@ import {Logger2Middleware} from "./logger2.middleware";
       UsersModule,
       ConfigModule.forRoot({
         envFilePath:[`${__dirname}/config/env/.${process.env.NODE_ENV}.env`],
-        load : [emailConfig],
+        load : [emailConfig,authConfig],
         isGlobal : true,
         validationSchema,
       }),
@@ -34,9 +45,26 @@ import {Logger2Middleware} from "./logger2.middleware";
           entities: [UserEntity],
           synchronize: true,
       }),
+      LoggerModule,
+      LoggingModule,
+      WinstonModule.forRoot({
+          transports:[
+              new winston.transports.Console({
+                  level: process.env.NODE_ENV === 'production'? 'info':'silly',format:winston.format.combine(
+                      winston.format.timestamp(),
+                      nestWinstonModuleUtilities.format.nestLike('Myapp',{prettyPrint:true}),
+                  )
+              })
+          ]
+      }),
+      BatchModule
   ],
-  // controllers:[],
-  // providers:[],
+  controllers:[AppController],
+  providers:[{
+      provide: APP_GUARD,
+      useClass:AuthGuard,
+  },
+  AppService,],
 })
 export class AppModule implements NestModule{
     configure(consumer: MiddlewareConsumer): any{

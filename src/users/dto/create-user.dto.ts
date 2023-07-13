@@ -18,4 +18,5 @@ export class CreateUserDto{
     @IsString()
     @Matches(/^[A-Za-z\d!@#$%^&*()]{8,30}$/)
     readonly password: string;
+
 }
